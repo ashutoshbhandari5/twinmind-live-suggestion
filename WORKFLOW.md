@@ -1,6 +1,6 @@
 # WORKFLOW.md
 
-Every new feature follows this exact process. Do not skip steps. Do not combine steps. Wait for user approval at each gate.
+Every new feature follows this exact process. Do not skip phases. Do not combine phases. Wait for user approval at each gate.
 
 ## The 6 phases
 
@@ -8,133 +8,132 @@ Every new feature follows this exact process. Do not skip steps. Do not combine 
 
 When the user describes a new feature, do NOT start coding or writing docs.
 
-First, ask clarifying questions until you understand:
+Ask clarifying questions until you understand:
 
 - What the feature does from the user's perspective
-- What the success criteria are
-- What the edge cases are
-- What depends on this feature and what this feature depends on
+- Success criteria
+- Edge cases and failure modes
+- Dependencies in and out
 - What is explicitly out of scope
 
-Ask as many questions as needed. Never assume. If something is ambiguous, ask. If the user says "use your judgment," confirm the specific decision before moving on.
+Never assume. If ambiguous, ask. If the user says "use your judgment," confirm the specific decision before proceeding.
 
-Only after the user confirms you understand do you proceed to Phase 2.
+Proceed to Phase 2 only after the user confirms.
 
-### Phase 2: Feature folder and docs
+### Phase 2: Feature doc
 
-Create a folder for the feature: `docs/features/<feature-name>/`
+Create one file: `docs/features/<feature-name>/FEATURE.md`
 
-Inside, write these files:
+The doc has these sections in this order:
 
-- `README.md`: what this feature is, why it exists, success criteria
-- `sub-features.md`: list of sub-features this feature contains, each with its own short spec
-- `design.md`: how this feature is structured (components, data flow, state changes, API endpoints)
-- `edge-cases.md`: every edge case and failure mode you and the user identified
-- `out-of-scope.md`: what is explicitly NOT part of this feature
+1. **Status** — one line: current phase, last updated date
+2. **What this is** — 2-3 sentences
+3. **Why it exists** — user problem it solves
+4. **Success criteria** — checklist of observable outcomes
+5. **Sub-features** — if any, as a short bullet list, not separate files
+6. **Design** — component tree, state changes, data flow, API contract changes
+7. **Edge cases** — numbered list, every case that must be handled
+8. **Out of scope** — explicit exclusions
+9. **Schemas** — only if this feature changes request/response shapes
+10. **Prompts** — only if this feature touches `lib/prompts.ts`
 
-Name sub-feature sub-folders if the feature is complex: `docs/features/<feature-name>/<sub-feature-name>/`
-
-If the feature touches prompts, add `prompts.md` describing prompt changes.
-If the feature touches schemas, add `schemas.md` describing API contract changes.
+Keep the doc scannable. Prefer bullet lists and short prose over walls of text. Target 150-300 lines total. If the doc exceeds 400 lines, split into sub-features (each gets its own folder and its own FEATURE.md) rather than padding one giant file.
 
 ### Phase 3: Doc review gate
 
-After writing docs, stop. Ask the user: "Docs are ready. Please review `docs/features/<feature-name>/`. Do you approve, or do you have changes?"
+After writing FEATURE.md, stop. Ask:
 
-If user approves: proceed to Phase 4.
-If user has changes: update docs, then ask again. Loop until approved.
+> FEATURE.md is ready at `docs/features/<feature-name>/FEATURE.md`. Please review. Approve, or request changes?
 
-Do not write any code during this phase.
+If approved: FEATURE.md is frozen for this cycle. Proceed to Phase 4.
+If changes: update and ask again.
+
+Do not write code in this phase.
 
 ### Phase 4: Implementation plan
 
-Before writing code, write an implementation plan as `docs/features/<feature-name>/implementation-plan.md`.
+Append an `## Implementation plan` section to the same FEATURE.md file. Do not create a separate plan file.
 
-The plan contains:
+The plan section contains:
 
-- Ordered list of concrete changes (file paths, what changes in each)
-- Dependencies between changes (what must be done first)
-- Estimated complexity per step (low/medium/high)
+- Ordered steps (file path, what changes in each)
+- Dependencies between steps
+- Complexity tag per step (low, medium, high)
 - Risks and unknowns
 
-Ask the user: "Implementation plan is ready. Do you approve, or do you have changes?"
+If the plan reveals a flaw in the earlier doc sections, note it in the plan as "Doc correction" and include the corrected text inline. Do not silently edit the doc body. The user sees all corrections in the plan and approves both together in Phase 5.
 
-If user approves: proceed to Phase 5.
-If user has changes: update plan, then ask again.
+### Phase 5: Plan review gate
 
-### Phase 5: Implementation
+Ask:
+
+> Implementation plan is appended to FEATURE.md. If any doc corrections are flagged, they are in the plan. Approve both, or request changes?
+
+If approved: apply any flagged doc corrections to the doc body, then proceed to Phase 6.
+If changes: update the plan and ask again.
+
+### Phase 6: Implementation
 
 Execute the plan step by step. For each step:
 
 - Make the change
 - Run typecheck and lint
-- Verify the change works
+- Verify the change compiles
 
-When the full feature is implemented, stop and ask: "Implementation is done. Please verify manually. When ready, I will write tests."
+When the full feature is implemented, stop and ask:
+
+> Implementation is done. Please verify manually. When ready, I will write tests.
 
 Do NOT write tests until user confirms manual verification passes.
 
-### Phase 6: Tests
+### Phase 7: Tests
 
 Once user verifies, write tests covering:
 
 - Happy path (typical successful usage)
 - Sad path (user errors, validation failures)
-- Edge cases from `edge-cases.md`
-- Boundary conditions (empty inputs, max sizes, zero, null)
+- Every numbered edge case from the Edge cases section
+- Boundary conditions (empty, max, zero, null)
 - Error handling (network fails, API fails, timeouts)
-- State transitions (for stateful features)
-- Positive cases (what should succeed)
-- Negative cases (what should fail and how)
+- State transitions for stateful features
+- Positive and negative cases
 
-For frontend: React Testing Library + Jest/Vitest. Test user interactions, not implementation details.
-For backend: pytest + httpx for API tests. Test endpoints with valid and invalid inputs.
+Frontend: Vitest + React Testing Library. Test user interactions, not implementation details.
+Backend: pytest + httpx. Test endpoints with valid and invalid inputs.
 
-After tests pass, ask the user: "All tests pass. Feature is ready. Mark as complete?"
+After tests pass, ask:
 
-If yes: update `docs/features/<feature-name>/README.md` with a "Status: Complete" line and ask user to commit the code don't commit yourself.
+> All tests pass. Feature is ready. Mark as complete?
+
+If yes: update FEATURE.md status to `Complete` with the commit SHA. Commit with `feat: complete <feature-name>`.
 
 ## Rules across all phases
 
-- Never skip phases. If user says "just code it," remind them of the workflow and ask which phase to start from.
-- Every phase ends with explicit user approval before moving forward.
-- Docs are the source of truth. If code diverges from docs, update docs first, then code.
-- If a feature is too large, break it into sub-features at Phase 2. Each sub-feature gets its own folder and its own 6-phase cycle.
-- Keep feature folders forever. Future devs read them to understand why decisions were made.
+- Never skip phases.
+- Every gate ends with explicit user approval.
+- One file per feature: `FEATURE.md`. Sub-features get their own folder with their own FEATURE.md.
+- FEATURE.md is the source of truth. If code diverges, update FEATURE.md first, then code.
+- Never ask the user to re-approve the same gate twice. If a doc correction is needed after the doc gate, surface it in the plan and cover both in the plan gate.
+- Keep feature folders forever. Future devs read them to understand decisions.
 
-## Example feature structure
+## Folder structure
 
 ```
 docs/features/
   mic-and-transcription/
-    README.md
-    sub-features.md
-    design.md
-    edge-cases.md
-    out-of-scope.md
-    implementation-plan.md
-    chunking-strategy/
-      README.md
-      design.md
-      edge-cases.md
+    FEATURE.md                one file, all sections, with plan appended
   live-suggestions/
-    README.md
-    sub-features.md
-    design.md
-    edge-cases.md
-    prompts.md
-    out-of-scope.md
-    implementation-plan.md
+    FEATURE.md
+    rolling-summary/          sub-feature as its own folder
+      FEATURE.md
   chat-with-streaming/
-    README.md
-    design.md
-    edge-cases.md
-    schemas.md
-    implementation-plan.md
+    FEATURE.md
 ```
 
 ## When the user starts a new feature
 
-Respond with: "Starting Phase 1 for <feature-name>. Let me ask some questions before anything else."
+Respond with:
 
-Then ask clarifying questions. Do not write code or docs yet.
+> Starting Phase 1 for <feature-name>. Let me ask some questions before anything else.
+
+Then ask clarifying questions. No code. No docs.

@@ -18,9 +18,11 @@ function authHeaders({ apiKey }: HeaderArgs): Record<string, string> {
 export async function transcribeAudio(args: {
   apiKey: string;
   audio: Blob;
+  durationMs: number;
 }): Promise<TranscribeResponse> {
   const form = new FormData();
   form.append("file", args.audio, "chunk.webm");
+  form.append("duration_ms", String(args.durationMs));
   const res = await fetch(`${BACKEND_URL}/transcribe`, {
     method: "POST",
     headers: authHeaders(args),

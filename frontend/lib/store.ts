@@ -5,6 +5,9 @@ import type {
   TranscriptChunk,
 } from "./types";
 
+type MicPermission = "unknown" | "granted" | "denied";
+type RecorderError = "none" | "auto-stopped";
+
 type SessionState = {
   isRecording: boolean;
   recordingStartedAt: number | null;
@@ -14,6 +17,8 @@ type SessionState = {
   lastRefreshAt: number | null;
   chatMessages: ChatMessage[];
   isStreamingChat: boolean;
+  micPermission: MicPermission;
+  recorderError: RecorderError;
   startRecording: () => void;
   stopRecording: () => void;
   addTranscriptChunk: (chunk: TranscriptChunk) => void;
@@ -22,6 +27,8 @@ type SessionState = {
   addChatMessage: (message: ChatMessage) => void;
   appendChatToken: (messageId: string, token: string) => void;
   setStreamingChat: (streaming: boolean) => void;
+  setMicPermission: (status: MicPermission) => void;
+  setRecorderError: (error: RecorderError) => void;
   reset: () => void;
 };
 
@@ -34,6 +41,8 @@ const initialState = {
   lastRefreshAt: null,
   chatMessages: [],
   isStreamingChat: false,
+  micPermission: "unknown" as MicPermission,
+  recorderError: "none" as RecorderError,
 } satisfies Partial<SessionState>;
 
 export const useSessionStore = create<SessionState>((set) => ({
@@ -58,5 +67,7 @@ export const useSessionStore = create<SessionState>((set) => ({
       ),
     })),
   setStreamingChat: (streaming) => set({ isStreamingChat: streaming }),
+  setMicPermission: (status) => set({ micPermission: status }),
+  setRecorderError: (error) => set({ recorderError: error }),
   reset: () => set({ ...initialState }),
 }));

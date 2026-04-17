@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -31,7 +31,7 @@ class ChatMessage(BaseModel):
     role: Literal["user", "assistant"]
     content: str
     timestamp: int
-    sourceSuggestion: Optional[dict[str, str]] = None
+    sourceSuggestion: dict[str, str] | None = None
 
 
 class TranscribeResponse(BaseModel):
@@ -43,7 +43,7 @@ class SuggestionsRequest(BaseModel):
     transcript: list[TranscriptChunk] = Field(default_factory=list)
     prompt_template: str = ""
     context_window_seconds: int = 90
-    session_started_at: Optional[int] = None
+    session_started_at: int | None = None
 
 
 class SuggestionsResponse(BaseModel):
@@ -63,7 +63,7 @@ class ExportRequest(BaseModel):
     transcript: list[TranscriptChunk] = Field(default_factory=list)
     suggestionBatches: list[SuggestionBatch] = Field(default_factory=list)
     chatMessages: list[ChatMessage] = Field(default_factory=list)
-    sessionStartedAt: Optional[int] = None
+    sessionStartedAt: int | None = None
 
 
 class ExportResponse(BaseModel):
