@@ -73,14 +73,16 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="grid grid-cols-3 gap-3">
           <div className="flex flex-col gap-2">
-            <Label>Suggestion window (s)</Label>
+            <Label>Suggestion window (chunks)</Label>
             <Input
               type="number"
-              value={state.suggestionContextWindowSeconds}
+              min={1}
+              max={50}
+              value={state.suggestionContextChunkCount}
               onChange={(e) =>
                 state.updateField(
-                  "suggestionContextWindowSeconds",
-                  Number(e.target.value),
+                  "suggestionContextChunkCount",
+                  Math.max(1, Math.min(50, Number(e.target.value) || 1)),
                 )
               }
             />

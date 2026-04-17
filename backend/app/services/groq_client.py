@@ -44,9 +44,25 @@ class GroqClient:
             return response.text
 
     async def complete_json(self, system_prompt: str, user_prompt: str) -> str:
-        # TODO: POST /chat/completions with model=GROQ_CHAT_MODEL, JSON response.
-        _ = (system_prompt, user_prompt, GROQ_CHAT_MODEL, SUGGESTIONS_TIMEOUT_SECONDS)
-        raise NotImplementedError
+        # Temperature 0.3 balances variety across batches against factual
+        # grounding. Exposed-in-Settings is out of scope (see prompts.md).
+        async with httpx.AsyncClient(timeout=SUGGESTIONS_TIMEOUT_SECONDS) as client:
+            response = await client.post(
+                f"{GROQ_API_BASE}/chat/completions",
+                headers={**self._headers(), "Content-Type": "application/json"},
+                json={
+                    "model": GROQ_CHAT_MODEL,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    "response_format": {"type": "json_object"},
+                    "temperature": 0.3,
+                },
+            )
+            response.raise_for_status()
+            data = response.json()
+            return str(data["choices"][0]["message"]["content"])
 
     async def stream_chat(
         self, system_prompt: str, messages: list[dict[str, str]]

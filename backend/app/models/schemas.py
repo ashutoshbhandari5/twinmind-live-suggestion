@@ -6,6 +6,15 @@ SuggestionType = Literal[
     "question", "talking_point", "answer", "fact_check", "clarification"
 ]
 
+MomentType = Literal[
+    "question_asked",
+    "claim_made",
+    "decision_point",
+    "topic_exploration",
+    "unfamiliar_term",
+    "idle",
+]
+
 
 class TranscriptChunk(BaseModel):
     id: str
@@ -20,9 +29,15 @@ class Suggestion(BaseModel):
     reasoning: str
 
 
+class PreviousSuggestion(BaseModel):
+    type: SuggestionType
+    preview: str
+
+
 class SuggestionBatch(BaseModel):
     id: str
     timestamp: int
+    moment_type: MomentType
     suggestions: list[Suggestion]
 
 
@@ -42,13 +57,15 @@ class TranscribeResponse(BaseModel):
 class SuggestionsRequest(BaseModel):
     transcript: list[TranscriptChunk] = Field(default_factory=list)
     prompt_template: str = ""
-    context_window_seconds: int = 90
-    session_started_at: int | None = None
+    context_chunk_count: int = 3
+    session_duration_ms: int = 0
+    previous_suggestions: list[PreviousSuggestion] = Field(default_factory=list)
 
 
 class SuggestionsResponse(BaseModel):
     batch_id: str
     timestamp: int
+    moment_type: MomentType
     suggestions: list[Suggestion]
 
 

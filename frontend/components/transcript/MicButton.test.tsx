@@ -7,10 +7,13 @@ import { MicButton } from "./MicButton";
 
 const startMock = vi.fn(async () => {});
 const stopMock = vi.fn(async () => {});
+const flushNowMock = vi.fn(async () => {});
 
-vi.mock("@/hooks/useRecorder", () => ({
-  useRecorder: () => ({ start: startMock, stop: stopMock }),
-}));
+const mockRecorder = {
+  start: startMock,
+  stop: stopMock,
+  flushNow: flushNowMock,
+};
 
 const toastErrorMock = vi.fn();
 vi.mock("sonner", () => ({
@@ -30,7 +33,7 @@ beforeEach(() => {
 describe("MicButton click guards", () => {
   it("toasts and does not start when Groq key is empty", async () => {
     const user = userEvent.setup();
-    render(<MicButton />);
+    render(<MicButton recorder={mockRecorder} />);
     await user.click(screen.getByRole("button"));
     expect(startMock).not.toHaveBeenCalled();
     expect(toastErrorMock).toHaveBeenCalled();
@@ -41,7 +44,7 @@ describe("MicButton click guards", () => {
   it("calls recorder.start when key is present and not recording", async () => {
     useSettingsStore.setState({ groqApiKey: "sk-test" });
     const user = userEvent.setup();
-    render(<MicButton />);
+    render(<MicButton recorder={mockRecorder} />);
     await user.click(screen.getByRole("button"));
     expect(startMock).toHaveBeenCalledTimes(1);
   });
@@ -50,7 +53,7 @@ describe("MicButton click guards", () => {
     useSettingsStore.setState({ groqApiKey: "sk-test" });
     useSessionStore.getState().startRecording();
     const user = userEvent.setup();
-    render(<MicButton />);
+    render(<MicButton recorder={mockRecorder} />);
     await user.click(screen.getByRole("button"));
     expect(stopMock).toHaveBeenCalledTimes(1);
   });
@@ -59,14 +62,14 @@ describe("MicButton click guards", () => {
 describe("MicButton disabled states", () => {
   it("is disabled when mic permission is denied", () => {
     useSessionStore.getState().setMicPermission("denied");
-    render(<MicButton />);
+    render(<MicButton recorder={mockRecorder} />);
     expect(screen.getByRole("button")).toBeDisabled();
     expect(screen.getByText(/Microphone blocked/i)).toBeInTheDocument();
   });
 
   it("is disabled after 3-strike auto-stop", () => {
     useSessionStore.getState().setRecorderError("auto-stopped");
-    render(<MicButton />);
+    render(<MicButton recorder={mockRecorder} />);
     expect(screen.getByRole("button")).toBeDisabled();
     expect(
       screen.getByText(/Recording stopped after 3 failed transcriptions/i),
@@ -77,7 +80,7 @@ describe("MicButton disabled states", () => {
     useSettingsStore.setState({ groqApiKey: "sk-test" });
     useSessionStore.getState().setRecorderError("auto-stopped");
     const user = userEvent.setup();
-    render(<MicButton />);
+    render(<MicButton recorder={mockRecorder} />);
     await user.click(screen.getByRole("button"));
     expect(startMock).not.toHaveBeenCalled();
     expect(stopMock).not.toHaveBeenCalled();
@@ -87,7 +90,7 @@ describe("MicButton disabled states", () => {
 describe("MicButton status text", () => {
   it("says 'Stopped. Click to resume.' when idle with key present", () => {
     useSettingsStore.setState({ groqApiKey: "sk-test" });
-    render(<MicButton />);
+    render(<MicButton recorder={mockRecorder} />);
     expect(
       screen.getByText(/Stopped\.\s*Click to resume/i),
     ).toBeInTheDocument();
@@ -96,14 +99,14 @@ describe("MicButton status text", () => {
   it("says 'Listening...' while recording", () => {
     useSettingsStore.setState({ groqApiKey: "sk-test" });
     useSessionStore.getState().startRecording();
-    render(<MicButton />);
+    render(<MicButton recorder={mockRecorder} />);
     expect(
       screen.getByText(/Listening.*transcript updates/i),
     ).toBeInTheDocument();
   });
 
   it("nudges to Settings when key is empty", () => {
-    render(<MicButton />);
+    render(<MicButton recorder={mockRecorder} />);
     expect(
       screen.getByText(/Add your Groq API key in Settings/i),
     ).toBeInTheDocument();

@@ -7,14 +7,15 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useSessionStore } from "@/lib/store";
 import { useSettingsStore } from "@/lib/settings-store";
-import { useRecorder } from "@/hooks/useRecorder";
+import type { RecorderHandle } from "@/hooks/useRecorder";
 
-export function MicButton() {
+type Props = { recorder: RecorderHandle };
+
+export function MicButton({ recorder }: Props) {
   const isRecording = useSessionStore((s) => s.isRecording);
   const micPermission = useSessionStore((s) => s.micPermission);
   const recorderError = useSessionStore((s) => s.recorderError);
   const groqApiKey = useSettingsStore((s) => s.groqApiKey);
-  const recorder = useRecorder();
   const [isRequesting, setIsRequesting] = useState(false);
 
   const isDenied = micPermission === "denied";

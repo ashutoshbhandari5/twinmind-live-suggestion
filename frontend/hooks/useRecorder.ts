@@ -13,9 +13,10 @@ const CHUNK_INTERVAL_MS = 30_000;
 const RETRY_DELAY_MS = 500;
 const MAX_CONSECUTIVE_FAILURES = 3;
 
-type RecorderHandle = {
+export type RecorderHandle = {
   start: () => Promise<void>;
   stop: () => Promise<void>;
+  flushNow: () => Promise<void>;
 };
 
 export function useRecorder(): RecorderHandle {
@@ -190,5 +191,22 @@ export function useRecorder(): RecorderHandle {
     await postChunk(blob, durationMs);
   }
 
-  return { start, stop };
+  // Close the current chunk early, open a fresh recorder, and post the chunk.
+  // Used by the live-suggestions manual refresh so we can surface the
+  // freshest possible transcript before asking for a new batch.
+  async function flushNow(): Promise<void> {
+    if (!useSessionStore.getState().isRecording) return;
+    clearRotationInterval();
+    const blob = await closeRecorderForBlob();
+    const durationMs = Date.now() - chunkStartRef.current;
+    if (useSessionStore.getState().isRecording) {
+      openRecorder();
+      intervalRef.current = setInterval(() => {
+        void rotate();
+      }, CHUNK_INTERVAL_MS);
+    }
+    await postChunk(blob, durationMs);
+  }
+
+  return { start, stop, flushNow };
 }

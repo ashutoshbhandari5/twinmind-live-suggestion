@@ -25,7 +25,7 @@ export function TranscriptFeed() {
   }
 
   return (
-    <ScrollArea className="flex-1">
+    <ScrollArea className="flex-1 min-h-0">
       <div className="flex flex-col px-1">
         {transcript.map((c) => (
           <TranscriptChunk key={c.id} chunk={c} />

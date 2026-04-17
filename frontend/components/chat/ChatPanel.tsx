@@ -10,7 +10,7 @@ export function ChatPanel() {
         title="Chat (Detailed Answers)"
         right="SESSION-ONLY"
       />
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 min-h-0">
         <Card>
           <CardContent className="text-xs text-muted-foreground">
             Click a suggestion or type a question below.

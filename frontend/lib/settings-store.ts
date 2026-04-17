@@ -13,7 +13,7 @@ type SettingsState = {
   suggestionPrompt: string;
   detailedAnswerPrompt: string;
   chatPrompt: string;
-  suggestionContextWindowSeconds: number;
+  suggestionContextChunkCount: number;
   detailedAnswerContextMode: DetailedAnswerContextMode;
   refreshIntervalSeconds: number;
   updateApiKey: (key: string) => void;
@@ -33,7 +33,7 @@ const defaults = {
   suggestionPrompt: SUGGESTION_PROMPT,
   detailedAnswerPrompt: DETAILED_ANSWER_PROMPT,
   chatPrompt: CHAT_PROMPT,
-  suggestionContextWindowSeconds: 90,
+  suggestionContextChunkCount: 3,
   detailedAnswerContextMode: "full" as DetailedAnswerContextMode,
   refreshIntervalSeconds: 30,
 };
@@ -50,6 +50,24 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: "twinmind-settings",
+      // v1 ships the first real SUGGESTION_PROMPT. Pre-v1 installs had "" for
+      // every prompt, which now fails backend validation. Migrate by filling
+      // any empty prompt with the current default. User edits survive.
+      version: 1,
+      migrate: (persistedState) => {
+        const s = (persistedState ?? {}) as Partial<SettingsState>;
+        if (!s.suggestionPrompt) s.suggestionPrompt = SUGGESTION_PROMPT;
+        if (!s.detailedAnswerPrompt)
+          s.detailedAnswerPrompt = DETAILED_ANSWER_PROMPT;
+        if (!s.chatPrompt) s.chatPrompt = CHAT_PROMPT;
+        if (
+          typeof s.suggestionContextChunkCount !== "number" ||
+          s.suggestionContextChunkCount < 1
+        ) {
+          s.suggestionContextChunkCount = defaults.suggestionContextChunkCount;
+        }
+        return s;
+      },
       storage: createJSONStorage(() => localStorage),
     },
   ),

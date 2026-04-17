@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { ThreeColumnLayout } from "@/components/layout/ThreeColumnLayout";
 import { TranscriptPanel } from "@/components/transcript/TranscriptPanel";
@@ -6,11 +8,16 @@ import { ChatPanel } from "@/components/chat/ChatPanel";
 import { ExportButton } from "@/components/shared/ExportButton";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useRecorder } from "@/hooks/useRecorder";
 
 export default function Home() {
+  // One recorder instance shared across the mic column and the suggestions
+  // column (which needs flushNow() for manual refresh).
+  const recorder = useRecorder();
+
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="flex items-center justify-between border-b border-border px-6 py-3">
+    <div className="flex h-screen flex-col overflow-hidden">
+      <header className="flex shrink-0 items-center justify-between border-b border-border px-6 py-3">
         <h1 className="text-sm font-medium tracking-wide">
           TwinMind — Live Suggestions
         </h1>
@@ -25,9 +32,9 @@ export default function Home() {
         </div>
       </header>
       <ThreeColumnLayout
-        left={<TranscriptPanel />}
+        left={<TranscriptPanel recorder={recorder} />}
         separator={<Separator orientation="vertical" />}
-        middle={<SuggestionsPanel />}
+        middle={<SuggestionsPanel recorder={recorder} />}
         right={<ChatPanel />}
       />
     </div>

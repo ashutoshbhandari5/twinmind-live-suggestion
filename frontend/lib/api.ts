@@ -1,6 +1,7 @@
 import type {
   ChatMessage,
   ExportPayload,
+  SuggestionType,
   SuggestionsResponse,
   TranscribeResponse,
   TranscriptChunk,
@@ -36,8 +37,9 @@ export async function fetchSuggestions(args: {
   apiKey: string;
   transcript: TranscriptChunk[];
   promptTemplate: string;
-  contextWindowSeconds: number;
-  sessionStartedAt: number | null;
+  contextChunkCount: number;
+  sessionDurationMs: number;
+  previousSuggestions: { type: SuggestionType; preview: string }[];
 }): Promise<SuggestionsResponse> {
   const res = await fetch(`${BACKEND_URL}/suggestions`, {
     method: "POST",
@@ -48,8 +50,9 @@ export async function fetchSuggestions(args: {
     body: JSON.stringify({
       transcript: args.transcript,
       prompt_template: args.promptTemplate,
-      context_window_seconds: args.contextWindowSeconds,
-      session_started_at: args.sessionStartedAt,
+      context_chunk_count: args.contextChunkCount,
+      session_duration_ms: args.sessionDurationMs,
+      previous_suggestions: args.previousSuggestions,
     }),
   });
   if (!res.ok) throw new Error(`suggestions failed: ${res.status}`);

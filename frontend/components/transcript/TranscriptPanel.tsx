@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { ColumnHeader } from "@/components/layout/ColumnHeader";
+import type { RecorderHandle } from "@/hooks/useRecorder";
 import { useSessionStore } from "@/lib/store";
 import { MicButton } from "./MicButton";
 import { TranscriptFeed } from "./TranscriptFeed";
@@ -23,7 +24,9 @@ function statusLabel(
   return "IDLE";
 }
 
-export function TranscriptPanel() {
+type Props = { recorder: RecorderHandle };
+
+export function TranscriptPanel({ recorder }: Props) {
   const isRecording = useSessionStore((s) => s.isRecording);
   const micPermission = useSessionStore((s) => s.micPermission);
   const recorderError = useSessionStore((s) => s.recorderError);
@@ -35,8 +38,8 @@ export function TranscriptPanel() {
         title="Mic & Transcript"
         right={statusLabel(isRecording, micPermission, recorderError)}
       />
-      <div className="flex flex-1 flex-col gap-4 p-4">
-        <MicButton />
+      <div className="flex flex-1 flex-col gap-4 p-4 min-h-0">
+        <MicButton recorder={recorder} />
         <TranscriptFeed />
       </div>
     </div>
