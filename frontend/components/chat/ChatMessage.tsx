@@ -1,11 +1,14 @@
+import { Card, CardContent } from "@/components/ui/card";
 import type { ChatMessage as ChatMessageType } from "@/lib/types";
 
 type Props = { message: ChatMessageType };
 
 export function ChatMessage({ message }: Props) {
   return (
-    <div className="rounded border border-dashed border-zinc-700 p-2 text-xs text-zinc-500">
-      ChatMessage {message.id}
-    </div>
+    <Card size="sm">
+      <CardContent className="text-xs text-muted-foreground">
+        ChatMessage {message.id}
+      </CardContent>
+    </Card>
   );
 }

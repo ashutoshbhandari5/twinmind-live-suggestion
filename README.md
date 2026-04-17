@@ -15,7 +15,8 @@ detailed follow-ups.
 
 ## Stack
 
-- Frontend: Next.js 15 App Router, TypeScript strict, Tailwind, Zustand, React Query
+- Frontend: Next.js 15 App Router, TypeScript strict, Tailwind v4, shadcn/ui, Zustand, React Query
+- Testing: Vitest with React Testing Library and jsdom (frontend), pytest (backend)
 - Backend: FastAPI, Python 3.11, httpx
 - Models: Groq Whisper Large V3 (transcription), Groq GPT-OSS 120B (suggestions and chat)
 - Deploy: Vercel (frontend), Railway (backend)

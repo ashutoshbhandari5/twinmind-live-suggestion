@@ -2,6 +2,17 @@
 
 import Link from "next/link";
 import { useSettingsStore } from "@/lib/settings-store";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 export default function SettingsPage() {
   const state = useSettingsStore();
@@ -10,120 +21,133 @@ export default function SettingsPage() {
     <div className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-medium">Settings</h1>
-        <Link href="/" className="text-xs text-zinc-400 hover:text-zinc-100">
+        <Link
+          href="/"
+          className={buttonVariants({ variant: "ghost", size: "sm" })}
+        >
           Back
         </Link>
       </div>
 
-      <Field label="Groq API key">
-        <input
-          type="password"
-          value={state.groqApiKey}
-          onChange={(e) => state.updateApiKey(e.target.value)}
-          placeholder="gsk_..."
-          className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500"
-        />
-      </Field>
-
-      <Field label="Suggestion prompt">
-        <textarea
-          rows={6}
-          value={state.suggestionPrompt}
-          onChange={(e) => state.updatePrompt("suggestionPrompt", e.target.value)}
-          className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-zinc-500"
-        />
-      </Field>
-
-      <Field label="Detailed answer prompt">
-        <textarea
-          rows={6}
-          value={state.detailedAnswerPrompt}
-          onChange={(e) =>
-            state.updatePrompt("detailedAnswerPrompt", e.target.value)
-          }
-          className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-zinc-500"
-        />
-      </Field>
-
-      <Field label="Chat prompt">
-        <textarea
-          rows={6}
-          value={state.chatPrompt}
-          onChange={(e) => state.updatePrompt("chatPrompt", e.target.value)}
-          className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-zinc-500"
-        />
-      </Field>
-
-      <div className="grid grid-cols-3 gap-3">
-        <Field label="Context window (seconds)">
-          <input
-            type="number"
-            value={state.suggestionContextWindowSeconds}
-            onChange={(e) =>
-              state.updateField(
-                "suggestionContextWindowSeconds",
-                Number(e.target.value),
-              )
-            }
-            className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500"
+      <Card>
+        <CardHeader>
+          <CardTitle>Groq API key</CardTitle>
+          <CardDescription>
+            Stored locally in your browser. Sent per-request in the
+            x-groq-api-key header.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Label htmlFor="groq-key" className="sr-only">
+            Groq API key
+          </Label>
+          <Input
+            id="groq-key"
+            type="password"
+            value={state.groqApiKey}
+            onChange={(e) => state.updateApiKey(e.target.value)}
+            placeholder="gsk_..."
           />
-        </Field>
-        <Field label="Detailed answer context">
-          <select
-            value={state.detailedAnswerContextMode}
-            onChange={(e) =>
-              state.updateField(
-                "detailedAnswerContextMode",
-                e.target.value as "full" | "windowed",
-              )
-            }
-            className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500"
-          >
-            <option value="full">Full transcript</option>
-            <option value="windowed">Windowed</option>
-          </select>
-        </Field>
-        <Field label="Refresh interval (seconds)">
-          <input
-            type="number"
-            value={state.refreshIntervalSeconds}
-            onChange={(e) =>
-              state.updateField(
-                "refreshIntervalSeconds",
-                Number(e.target.value),
-              )
-            }
-            className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500"
-          />
-        </Field>
-      </div>
+        </CardContent>
+      </Card>
+
+      <PromptCard
+        label="Suggestion prompt"
+        value={state.suggestionPrompt}
+        onChange={(v) => state.updatePrompt("suggestionPrompt", v)}
+      />
+      <PromptCard
+        label="Detailed answer prompt"
+        value={state.detailedAnswerPrompt}
+        onChange={(v) => state.updatePrompt("detailedAnswerPrompt", v)}
+      />
+      <PromptCard
+        label="Chat prompt"
+        value={state.chatPrompt}
+        onChange={(v) => state.updatePrompt("chatPrompt", v)}
+      />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Context windows</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-3 gap-3">
+          <div className="flex flex-col gap-2">
+            <Label>Suggestion window (s)</Label>
+            <Input
+              type="number"
+              value={state.suggestionContextWindowSeconds}
+              onChange={(e) =>
+                state.updateField(
+                  "suggestionContextWindowSeconds",
+                  Number(e.target.value),
+                )
+              }
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>Detailed answer context</Label>
+            <select
+              value={state.detailedAnswerContextMode}
+              onChange={(e) =>
+                state.updateField(
+                  "detailedAnswerContextMode",
+                  e.target.value as "full" | "windowed",
+                )
+              }
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/50"
+            >
+              <option value="full">Full transcript</option>
+              <option value="windowed">Windowed</option>
+            </select>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>Refresh interval (s)</Label>
+            <Input
+              type="number"
+              value={state.refreshIntervalSeconds}
+              onChange={(e) =>
+                state.updateField(
+                  "refreshIntervalSeconds",
+                  Number(e.target.value),
+                )
+              }
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       <div>
-        <button
-          type="button"
-          onClick={state.resetToDefaults}
-          className="rounded border border-zinc-700 px-3 py-1 text-xs text-zinc-300 hover:border-zinc-500"
-        >
+        <Button variant="outline" size="sm" onClick={state.resetToDefaults}>
           Reset to defaults
-        </button>
+        </Button>
       </div>
     </div>
   );
 }
 
-function Field({
+function PromptCard({
   label,
-  children,
+  value,
+  onChange,
 }: {
   label: string;
-  children: React.ReactNode;
+  value: string;
+  onChange: (v: string) => void;
 }) {
   return (
-    <label className="flex flex-col gap-1">
-      <span className="text-xs tracking-widest text-zinc-500">
-        {label.toUpperCase()}
-      </span>
-      {children}
-    </label>
+    <Card>
+      <CardHeader>
+        <CardTitle>{label}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Textarea
+          rows={6}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="font-mono text-xs"
+        />
+      </CardContent>
+    </Card>
   );
 }

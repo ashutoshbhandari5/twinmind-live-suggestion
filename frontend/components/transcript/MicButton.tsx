@@ -1,7 +1,11 @@
+import { Card, CardContent } from "@/components/ui/card";
+
 export function MicButton() {
   return (
-    <div className="rounded border border-dashed border-zinc-700 p-4 text-xs text-zinc-500">
-      MicButton
-    </div>
+    <Card size="sm">
+      <CardContent className="text-xs text-muted-foreground">
+        MicButton placeholder
+      </CardContent>
+    </Card>
   );
 }

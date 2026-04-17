@@ -1,4 +1,5 @@
 import { ColumnHeader } from "@/components/layout/ColumnHeader";
+import { Card, CardContent } from "@/components/ui/card";
 import { ChatInput } from "./ChatInput";
 
 export function ChatPanel() {
@@ -10,9 +11,11 @@ export function ChatPanel() {
         right="SESSION-ONLY"
       />
       <div className="flex-1 overflow-y-auto p-4">
-        <div className="rounded border border-dashed border-zinc-700 p-4 text-xs text-zinc-500">
-          Click a suggestion or type a question below.
-        </div>
+        <Card>
+          <CardContent className="text-xs text-muted-foreground">
+            Click a suggestion or type a question below.
+          </CardContent>
+        </Card>
       </div>
       <ChatInput />
     </div>

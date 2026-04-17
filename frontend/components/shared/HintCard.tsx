@@ -1,11 +1,14 @@
 import type { ReactNode } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 
 type Props = { children: ReactNode };
 
 export function HintCard({ children }: Props) {
   return (
-    <div className="rounded border border-zinc-800 bg-zinc-900 p-3 text-xs text-zinc-400">
-      {children}
-    </div>
+    <Card size="sm">
+      <CardContent className="text-xs text-muted-foreground">
+        {children}
+      </CardContent>
+    </Card>
   );
 }

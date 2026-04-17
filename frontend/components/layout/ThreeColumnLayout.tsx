@@ -4,14 +4,17 @@ type Props = {
   left: ReactNode;
   middle: ReactNode;
   right: ReactNode;
+  separator: ReactNode;
 };
 
-export function ThreeColumnLayout({ left, middle, right }: Props) {
+export function ThreeColumnLayout({ left, middle, right, separator }: Props) {
   return (
-    <div className="grid flex-1 grid-cols-3 divide-x divide-zinc-800">
-      <section className="min-h-0">{left}</section>
-      <section className="min-h-0">{middle}</section>
-      <section className="min-h-0">{right}</section>
+    <div className="flex flex-1 min-h-0">
+      <section className="flex-1 min-w-0">{left}</section>
+      {separator}
+      <section className="flex-1 min-w-0">{middle}</section>
+      {separator}
+      <section className="flex-1 min-w-0">{right}</section>
     </div>
   );
 }

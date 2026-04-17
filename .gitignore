@@ -17,6 +17,11 @@ venv/
 .mypy_cache/
 .ruff_cache/
 
+# Coverage
+coverage/
+.coverage
+.nyc_output/
+
 # Env
 .env
 .env.local

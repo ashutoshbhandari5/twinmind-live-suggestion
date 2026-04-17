@@ -1,7 +1,11 @@
+import { Card, CardContent } from "@/components/ui/card";
+
 export function TranscriptFeed() {
   return (
-    <div className="flex-1 rounded border border-dashed border-zinc-700 p-4 text-xs text-zinc-500">
-      TranscriptFeed
-    </div>
+    <Card className="flex-1">
+      <CardContent className="text-xs text-muted-foreground">
+        TranscriptFeed placeholder
+      </CardContent>
+    </Card>
   );
 }
