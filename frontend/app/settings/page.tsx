@@ -71,7 +71,7 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle>Context windows</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-3 gap-3">
+        <CardContent className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-2">
             <Label>Suggestion window (chunks)</Label>
             <Input
@@ -86,22 +86,6 @@ export default function SettingsPage() {
                 )
               }
             />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label>Detailed answer context</Label>
-            <select
-              value={state.detailedAnswerContextMode}
-              onChange={(e) =>
-                state.updateField(
-                  "detailedAnswerContextMode",
-                  e.target.value as "full" | "windowed",
-                )
-              }
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/50"
-            >
-              <option value="full">Full transcript</option>
-              <option value="windowed">Windowed</option>
-            </select>
           </div>
           <div className="flex flex-col gap-2">
             <Label>Refresh interval (s)</Label>

@@ -29,6 +29,7 @@ export function SuggestionCard({ suggestion, highlighted = false }: Props) {
       sourceSuggestion: {
         type: suggestion.type,
         preview: suggestion.preview,
+        reasoning: suggestion.reasoning,
       },
     });
   }

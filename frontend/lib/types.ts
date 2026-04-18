@@ -38,7 +38,11 @@ export type ChatMessage = {
   role: "user" | "assistant";
   content: string;
   timestamp: number;
-  sourceSuggestion?: { type: SuggestionType; preview: string };
+  sourceSuggestion?: {
+    type: SuggestionType;
+    preview: string;
+    reasoning?: string;
+  };
 };
 
 export type TranscribeResponse = {
@@ -55,9 +59,3 @@ export type SuggestionsResponse = {
   suggestions: Suggestion[];
 };
 
-export type ExportPayload = {
-  transcript: TranscriptChunk[];
-  suggestionBatches: SuggestionBatch[];
-  chatMessages: ChatMessage[];
-  sessionStartedAt: number | null;
-};

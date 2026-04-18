@@ -1,6 +1,5 @@
 import type {
   ChatMessage,
-  ExportPayload,
   SuggestionType,
   SuggestionsResponse,
   TranscribeResponse,
@@ -64,6 +63,11 @@ export async function streamChat(args: {
   transcript: TranscriptChunk[];
   messages: ChatMessage[];
   newMessage: string;
+  sourceSuggestion: {
+    type: SuggestionType;
+    preview: string;
+    reasoning: string;
+  } | null;
   promptTemplate: string;
   onToken: (token: string) => void;
 }): Promise<void> {
@@ -77,6 +81,7 @@ export async function streamChat(args: {
       transcript: args.transcript,
       messages: args.messages,
       new_message: args.newMessage,
+      source_suggestion: args.sourceSuggestion,
       prompt_template: args.promptTemplate,
     }),
   });
@@ -91,14 +96,3 @@ export async function streamChat(args: {
   }
 }
 
-export async function exportSession(
-  payload: ExportPayload,
-): Promise<{ json: string }> {
-  const res = await fetch(`${BACKEND_URL}/export`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error(`export failed: ${res.status}`);
-  return (await res.json()) as { json: string };
-}

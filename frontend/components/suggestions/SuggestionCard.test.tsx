@@ -67,6 +67,7 @@ describe("SuggestionCard click", () => {
     expect(msgs[0].sourceSuggestion).toEqual({
       type: "answer",
       preview: SUGGESTION.preview,
+      reasoning: SUGGESTION.reasoning,
     });
   });
 

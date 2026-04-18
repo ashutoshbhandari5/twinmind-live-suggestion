@@ -1,6 +1,6 @@
 # live-suggestions
 
-Status: Phase 6 (tests). Manual verification passed.
+Status: Complete. 106 tests pass (60 backend, 76 frontend).
 
 ## What this is
 

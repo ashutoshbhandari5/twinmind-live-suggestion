@@ -1,3 +1,4 @@
+import json
 from collections.abc import AsyncIterator
 
 import httpx
@@ -65,10 +66,37 @@ class GroqClient:
             return str(data["choices"][0]["message"]["content"])
 
     async def stream_chat(
-        self, system_prompt: str, messages: list[dict[str, str]]
+        self, messages: list[dict[str, str]]
     ) -> AsyncIterator[str]:
-        # TODO: POST /chat/completions with stream=True, yield token deltas.
-        _ = (system_prompt, messages, GROQ_CHAT_MODEL, CHAT_TIMEOUT_SECONDS, GROQ_API_BASE)
-        if False:
-            yield ""
-        raise NotImplementedError
+        # Temperature 0.5 favors fluency without drifting from grounding.
+        # Higher than suggestions (0.3) because chat benefits from more variety.
+        async with httpx.AsyncClient(timeout=CHAT_TIMEOUT_SECONDS) as client:
+            async with client.stream(
+                "POST",
+                f"{GROQ_API_BASE}/chat/completions",
+                headers={**self._headers(), "Content-Type": "application/json"},
+                json={
+                    "model": GROQ_CHAT_MODEL,
+                    "messages": messages,
+                    "temperature": 0.5,
+                    "stream": True,
+                },
+            ) as response:
+                response.raise_for_status()
+                async for raw_line in response.aiter_lines():
+                    if not raw_line or not raw_line.startswith("data: "):
+                        continue
+                    payload = raw_line[len("data: ") :]
+                    if payload == "[DONE]":
+                        return
+                    try:
+                        frame = json.loads(payload)
+                    except json.JSONDecodeError:
+                        continue
+                    delta = (
+                        frame.get("choices", [{}])[0]
+                        .get("delta", {})
+                        .get("content")
+                    )
+                    if delta:
+                        yield delta

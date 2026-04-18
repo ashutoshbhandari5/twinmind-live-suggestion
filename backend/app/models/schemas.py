@@ -69,10 +69,17 @@ class SuggestionsResponse(BaseModel):
     suggestions: list[Suggestion]
 
 
+class ChatRequestSourceSuggestion(BaseModel):
+    type: SuggestionType
+    preview: str
+    reasoning: str = ""
+
+
 class ChatRequest(BaseModel):
     transcript: list[TranscriptChunk] = Field(default_factory=list)
     messages: list[ChatMessage] = Field(default_factory=list)
     new_message: str = ""
+    source_suggestion: ChatRequestSourceSuggestion | None = None
     prompt_template: str = ""
 
 

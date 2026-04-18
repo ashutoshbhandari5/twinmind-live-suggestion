@@ -9,11 +9,15 @@ import { ExportButton } from "@/components/shared/ExportButton";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useRecorder } from "@/hooks/useRecorder";
+import { useChatStream } from "@/hooks/useChatStream";
 
 export default function Home() {
   // One recorder instance shared across the mic column and the suggestions
   // column (which needs flushNow() for manual refresh).
   const recorder = useRecorder();
+  // Subscribe-and-fire dispatch for the chat column. Reads only from stores;
+  // no handle needs to thread through props.
+  useChatStream();
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
