@@ -1,0 +1,27 @@
+# Render Blueprint for the backend.
+# https://render.com/docs/blueprint-spec
+#
+# How to apply:
+# 1. Push this file to the default branch.
+# 2. In Render, click New -> Blueprint, point it at this repo.
+# 3. Render reads this file and provisions the service below.
+#
+# The frontend is deployed separately on Vercel from the `frontend/` directory.
+
+services:
+  - type: web
+    name: twinmind-live-suggestions-api
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # The Vercel origin(s) that the browser will call from. Set this after
+      # the frontend is deployed. Comma-separated if multiple. Example:
+      # https://twinmind-live-suggestions.vercel.app
+      - key: ALLOWED_ORIGINS
+        sync: false

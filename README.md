@@ -175,6 +175,7 @@ twinmind-live-suggestions/
 ├── SECURITY.md                 how the API key is handled
 ├── CONTRIBUTING.md             how to propose changes
 ├── LICENSE                     MIT
+├── render.yaml                 Render Blueprint (Docker, /health probe)
 ├── .github/
 │   ├── workflows/ci.yml        lint, typecheck, tests on push
 │   ├── PULL_REQUEST_TEMPLATE.md
@@ -187,8 +188,10 @@ twinmind-live-suggestions/
 │   │   ├── services/           Groq client, prompt builder
 │   │   └── models/schemas.py   Pydantic request and response shapes
 │   ├── tests/                  pytest suite
-│   ├── Dockerfile              Railway deploy target
-│   ├── Procfile                Heroku-style fallback
+│   ├── Dockerfile              container image, pins Python 3.11
+│   ├── Procfile                Heroku-style start command
+│   ├── railway.toml            Railway deploy config
+│   ├── .python-version         pins Python for non-Docker runtimes
 │   └── requirements.txt
 └── frontend/
     ├── app/                    Next.js App Router (home + settings)
@@ -412,26 +415,56 @@ CI runs all four on every push. See
 
 ## Deployment
 
-**Backend on Railway**
+### Backend on Render (recommended)
 
-A `Dockerfile` and `railway.toml` are committed. Railway builds from the
-`Dockerfile`, runs `uvicorn app.main:app --host 0.0.0.0 --port $PORT`, and hits
-`/health` for its liveness check.
+A `render.yaml` blueprint is committed at the repo root. It provisions a
+single Docker web service that builds from `backend/Dockerfile`, runs
+`uvicorn app.main:app --host 0.0.0.0 --port $PORT`, and uses `/health` as
+the liveness probe.
 
-Optional env var:
+1. In Render, click **New → Blueprint** and point it at this repo.
+2. Render reads [`render.yaml`](./render.yaml) and provisions the service.
+3. Set the one required env var when prompted:
+   - `ALLOWED_ORIGINS` → the Vercel origin, e.g.
+     `https://twinmind-live-suggestions.vercel.app` (comma-separated if
+     multiple).
+4. Auto-deploy is on. Every push to `main` redeploys.
 
-- `ALLOWED_ORIGINS` (comma-separated). Defaults to `http://localhost:3000`.
-  Set this to your Vercel URL in production.
+If you are configuring the service manually in the dashboard instead:
 
-**Frontend on Vercel**
+| Field | Value |
+| --- | --- |
+| Runtime | Docker |
+| Dockerfile Path | `backend/Dockerfile` |
+| Docker Build Context Directory | `backend` |
+| Start Command | leave blank; the Dockerfile's `CMD` runs uvicorn |
+| Health Check Path | `/health` |
+| Env: `ALLOWED_ORIGINS` | your Vercel URL |
+
+Staying on the native Python runtime instead of Docker also works. In that
+case `backend/.python-version` pins Python to 3.11, and you must set the
+start command yourself to:
+
+```
+uvicorn app.main:app --host 0.0.0.0 --port $PORT
+```
+
+### Backend on Railway (alternative)
+
+A `Dockerfile`, `Procfile`, and `railway.toml` are committed. Railway builds
+from the `Dockerfile`, runs the same uvicorn command, and hits `/health` for
+its liveness check. Set `ALLOWED_ORIGINS` the same way.
+
+### Frontend on Vercel
 
 Point Vercel at the `frontend/` directory. Set the single required env var:
 
-- `NEXT_PUBLIC_BACKEND_URL` → the public Railway URL of your backend.
+- `NEXT_PUBLIC_BACKEND_URL` → the public Render or Railway URL of your
+  backend.
 
 A `.env.example` is committed at `frontend/.env.example` as a reference.
 
-**Post-deploy check**
+### Post-deploy check
 
 1. Open the Vercel URL.
 2. Visit Settings, paste a valid Groq key, press Apply.
