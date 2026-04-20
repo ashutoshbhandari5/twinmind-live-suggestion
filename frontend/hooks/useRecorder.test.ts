@@ -153,6 +153,39 @@ describe("useRecorder.start success path", () => {
   });
 });
 
+describe("useRecorder.getChunkStart", () => {
+  it("returns null before start is called", () => {
+    const { result } = renderHook(() => useRecorder());
+    expect(result.current.getChunkStart()).toBeNull();
+  });
+
+  it("returns a number after start succeeds", async () => {
+    useSettingsStore.setState({ groqApiKey: "sk" });
+    vi.useFakeTimers();
+    const t0 = new Date("2026-04-17T10:00:00Z").getTime();
+    vi.setSystemTime(t0);
+
+    const { result } = renderHook(() => useRecorder());
+    await act(async () => {
+      await result.current.start();
+    });
+
+    expect(result.current.getChunkStart()).toBe(t0);
+  });
+
+  it("returns null after stop", async () => {
+    useSettingsStore.setState({ groqApiKey: "sk" });
+    const { result } = renderHook(() => useRecorder());
+    await act(async () => {
+      await result.current.start();
+    });
+    await act(async () => {
+      await result.current.stop();
+    });
+    expect(result.current.getChunkStart()).toBeNull();
+  });
+});
+
 describe("useRecorder.stop", () => {
   it("flips isRecording and skips the POST for a sub-2s final chunk", async () => {
     useSettingsStore.setState({ groqApiKey: "sk" });

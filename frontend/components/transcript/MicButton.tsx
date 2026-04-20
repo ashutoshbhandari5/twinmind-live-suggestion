@@ -16,6 +16,9 @@ export function MicButton({ recorder }: Props) {
   const micPermission = useSessionStore((s) => s.micPermission);
   const recorderError = useSessionStore((s) => s.recorderError);
   const groqApiKey = useSettingsStore((s) => s.groqApiKey);
+  const refreshIntervalSeconds = useSettingsStore(
+    (s) => s.refreshIntervalSeconds,
+  );
   const [isRequesting, setIsRequesting] = useState(false);
 
   const isDenied = micPermission === "denied";
@@ -75,7 +78,7 @@ export function MicButton({ recorder }: Props) {
     : isDenied
       ? "Microphone blocked. Enable access in browser settings."
       : isRecording
-        ? "Listening... transcript updates every 30s."
+        ? `Listening... transcript updates every ${refreshIntervalSeconds}s.`
         : groqApiKey === ""
           ? "Add your Groq API key in Settings to start."
           : "Stopped. Click to resume.";

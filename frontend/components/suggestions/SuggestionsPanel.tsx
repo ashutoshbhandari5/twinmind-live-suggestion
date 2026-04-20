@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ColumnHeader } from "@/components/layout/ColumnHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,7 +18,6 @@ export function SuggestionsPanel({ recorder }: Props) {
   const isLoading = useSessionStore((s) => s.isLoadingSuggestions);
   const suggestionError = useSessionStore((s) => s.suggestionError);
   const transcriptLength = useSessionStore((s) => s.transcript.length);
-  const recordingStartedAt = useSessionStore((s) => s.recordingStartedAt);
   const isRecording = useSessionStore((s) => s.isRecording);
   const refreshIntervalSeconds = useSettingsStore(
     (s) => s.refreshIntervalSeconds,
@@ -26,10 +25,8 @@ export function SuggestionsPanel({ recorder }: Props) {
 
   const { manualRefresh } = useAutoRefresh(recorder);
 
-  const lastBatchTimestamp = batches[0]?.timestamp ?? null;
   const countdown = useCountdown(
-    lastBatchTimestamp,
-    recordingStartedAt,
+    recorder.getChunkStart,
     refreshIntervalSeconds,
     isRecording,
   );
@@ -76,29 +73,42 @@ export function SuggestionsPanel({ recorder }: Props) {
 }
 
 function useCountdown(
-  lastBatchTimestamp: number | null,
-  recordingStartedAt: number | null,
+  getChunkStart: () => number | null,
   intervalSeconds: number,
   isRecording: boolean,
 ): number | null {
-  // Hold countdown in state so render stays pure (no Date.now during render).
-  // All setCountdown calls live inside a setInterval callback so the effect
-  // body does no synchronous state updates.
+  // Anchor to the recorder's current chunk start so pause/resume, manual
+  // flush, and rotation all reset the countdown to a full window. Hold value
+  // in state to keep render pure (no Date.now during render).
   const [countdown, setCountdown] = useState<number | null>(null);
 
+  // Keep the latest getter accessible from inside the interval without
+  // re-running the effect on every render of the parent.
+  const getterRef = useRef(getChunkStart);
   useEffect(() => {
+    getterRef.current = getChunkStart;
+  });
+
+  useEffect(() => {
+    // When not recording, the hook returns null directly below; no interval
+    // needed. Stored countdown value is ignored until recording resumes, at
+    // which point the immediate tick() overwrites it.
     if (!isRecording) return;
-    const base = lastBatchTimestamp ?? recordingStartedAt;
-    const id = setInterval(() => {
-      if (base === null) {
+    const tick = (): void => {
+      const start = getterRef.current();
+      if (start === null) {
         setCountdown(intervalSeconds);
         return;
       }
-      const elapsed = (Date.now() - base) / 1000;
-      setCountdown(Math.max(0, Math.round(intervalSeconds - elapsed)));
-    }, 1000);
+      const elapsed = (Date.now() - start) / 1000;
+      setCountdown(
+        Math.max(0, Math.min(intervalSeconds, Math.round(intervalSeconds - elapsed))),
+      );
+    };
+    tick();
+    const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [lastBatchTimestamp, recordingStartedAt, intervalSeconds, isRecording]);
+  }, [intervalSeconds, isRecording]);
 
   if (!isRecording) return null;
   return countdown;

@@ -13,6 +13,7 @@ const mockRecorder = {
   start: startMock,
   stop: stopMock,
   flushNow: flushNowMock,
+  getChunkStart: () => null,
 };
 
 const toastErrorMock = vi.fn();

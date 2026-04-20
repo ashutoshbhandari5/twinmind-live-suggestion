@@ -16,7 +16,11 @@ export function useAutoRefresh(recorder: RecorderHandle): AutoRefreshHandle {
   const failureCountRef = useRef<number>(0);
   const pendingManualRef = useRef<boolean>(false);
   const suppressNextAutoRef = useRef<boolean>(false);
-  const lastSeenLengthRef = useRef<number>(0);
+  // Null sentinel distinguishes "never seen a length" (fresh remount) from
+  // "seen length 0" (session really is empty). On the first effect run we
+  // adopt the current length without firing, so navigating away and back
+  // does not re-trigger a refresh for chunks already represented on screen.
+  const lastSeenLengthRef = useRef<number | null>(null);
 
   async function doRefresh(): Promise<void> {
     const session = useSessionStore.getState();
@@ -96,7 +100,18 @@ export function useAutoRefresh(recorder: RecorderHandle): AutoRefreshHandle {
   const transcriptLength = useSessionStore((s) => s.transcript.length);
 
   useEffect(() => {
-    if (transcriptLength === 0) return;
+    if (transcriptLength === 0) {
+      // Still catches the "first chunk of a brand new session" case on the
+      // _next_ effect run, once length grows from 0 to 1.
+      lastSeenLengthRef.current = 0;
+      return;
+    }
+    if (lastSeenLengthRef.current === null) {
+      // First effect run after (re)mount with pre-existing transcript. Adopt
+      // the current length silently; the visible batch is already up to date.
+      lastSeenLengthRef.current = transcriptLength;
+      return;
+    }
     if (transcriptLength === lastSeenLengthRef.current) return;
     lastSeenLengthRef.current = transcriptLength;
     if (suppressNextAutoRef.current) {

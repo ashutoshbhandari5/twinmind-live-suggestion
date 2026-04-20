@@ -16,6 +16,7 @@ function makeRecorder(): RecorderHandle {
     start: vi.fn(async () => {}),
     stop: vi.fn(async () => {}),
     flushNow: vi.fn(async () => {}),
+    getChunkStart: () => null,
   };
 }
 

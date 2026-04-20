@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security report
+    url: https://github.com/
+    about: Please read SECURITY.md before filing a vulnerability. Use the security label when you open the issue.
